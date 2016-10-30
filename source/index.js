@@ -23,21 +23,28 @@ function _command(command, callback) {
 	});
 }
 
-var command = 
-	'git log -1 --pretty=format:"%h,%H,%s,%f,%b,%at,%ct,%an,%ae,%cn,%ce,%N,"' + 
+var command = function (separator) {
+	var format = '%h,%H,%s,%f,%b,%at,%ct,%an,%ae,%cn,%ce,%N,';
+	if (separator !== ',') {
+		format = format.split(',').join(separator);
+	}
+	return 'git log -1 --pretty=format:"' + format + '"' + 
 	' && git rev-parse --abbrev-ref HEAD' + 
 	' && git tag --contains HEAD';
+}
 
 module.exports = {
 	getLastCommit : function(callback, _options) {
 		options = _options;
-		_command(command, function(err, res) {
+		var separator = (options && options.separator) || ',';
+		
+		_command(command(separator), function(err, res) {
 			if (err) {
 				callback(err);
 				return;
 			}
 			
-			var a = res.split(',');
+			var a = res.split(separator);
 
 			var tags = [];
 			if (a[a.length-1] !== '') {
